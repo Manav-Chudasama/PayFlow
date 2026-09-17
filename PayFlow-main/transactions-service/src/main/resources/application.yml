@@ -1,0 +1,24 @@
+server:
+  port: 8082
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/transactions_db}
+    username: ${DB_USER:payflow}
+    password: ${DB_PASSWORD:payflow}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+accounts:
+  # localhost when run from the IDE; http://accounts-service:8081 in Docker.
+  base-url: ${ACCOUNTS_URL:http://localhost:8081}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

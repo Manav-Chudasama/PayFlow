@@ -1,0 +1,42 @@
+server:
+  port: 8083
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ledger_db}
+    username: ${DB_USER:payflow}
+    password: ${DB_PASSWORD:payflow}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}   # 'redis' in Docker
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:localhost:9092}
+    consumer:
+      group-id: ledger-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    properties:
+      spring.json.trusted.packages: "*"
+      # The producer stamps a __TypeId__ header for com.payflow.transactions...TransactionEvent,
+      # which doesn't exist in this service. Ignore the header and deserialize into our own copy
+      # of the record instead. This is the trade-off of duplicating the DTO per service.
+      spring.json.use.type.headers: false
+      spring.json.value.default.type: com.payflow.ledger.event.TransactionEvent
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+llm:
+  # AI categorization (Phase 4) via Google Gemini. Runs on the enrichment path,
+  # not the money path. If api-key is empty the categorizer skips the LLM and uses
+  # the rule fallback, so the ledger works with GEMINI_API_KEY unset.
+  api-key: ${GEMINI_API_KEY:}
+  model: ${LLM_MODEL:gemini-flash-lite-latest}

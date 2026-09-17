@@ -1,0 +1,27 @@
+# Build output
+target/
+build/
+
+# Maven wrapper jar (downloaded on first build)
+**/.mvn/wrapper/maven-wrapper.jar
+
+# IDEs / editors
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local environment / secrets (e.g. GEMINI_API_KEY) — never commit
+.env
+*.env

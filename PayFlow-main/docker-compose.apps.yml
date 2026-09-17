@@ -1,0 +1,55 @@
+# The three application services. Run together with the infra file:
+#   docker compose -f docker-compose.yml -f docker-compose.apps.yml up --build
+# Merged into one project, so these share the infra network and reach Postgres
+# at postgres:5432 and Kafka at kafka:29092 (the DOCKER listener).
+services:
+  accounts-service:
+    build: ./accounts-service
+    container_name: payflow-accounts
+    ports:
+      - "8081:8081"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/accounts_db
+      REDIS_HOST: redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  transactions-service:
+    build: ./transactions-service
+    container_name: payflow-transactions
+    ports:
+      - "8082:8082"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/transactions_db
+      KAFKA_BROKERS: kafka:29092
+      ACCOUNTS_URL: http://accounts-service:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      accounts-service:
+        condition: service_started
+
+  ledger-service:
+    build: ./ledger-service
+    container_name: payflow-ledger
+    ports:
+      - "8083:8083"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/ledger_db
+      KAFKA_BROKERS: kafka:29092
+      REDIS_HOST: redis
+      # AI categorization key, passed through from the host env (falls back to
+      # rule-based categorization when unset). export GEMINI_API_KEY=... to enable.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy

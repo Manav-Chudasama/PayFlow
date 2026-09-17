@@ -1,0 +1,22 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/accounts_db}
+    username: ${DB_USER:payflow}
+    password: ${DB_PASSWORD:payflow}
+  jpa:
+    hibernate:
+      ddl-auto: update      # dev only; fine for this project
+    show-sql: true
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}   # 'redis' in Docker
+      port: ${REDIS_PORT:6379}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info    # gives you /actuator/health
